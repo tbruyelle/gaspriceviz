@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"os"
+	"path/filepath"
 
 	"github.com/vicanso/go-charts/v2"
 )
@@ -59,6 +61,8 @@ func genChart() image.Image {
 	}
 	p, err := charts.LineRender(
 		values,
+		charts.WidthOptionFunc(1000),
+		charts.HeightOptionFunc(800),
 		charts.TitleTextOptionFunc("Line"),
 		charts.XAxisDataOptionFunc([]string{
 			"Mon",
@@ -101,9 +105,25 @@ func genChart() image.Image {
 	if err != nil {
 		panic(err)
 	}
+	writeFile(buf)
 	img, _, err := image.Decode(bytes.NewReader(buf))
 	if err != nil {
 		panic(fmt.Errorf("fetchImage: image decode failed: %v", err))
 	}
 	return img
+}
+
+func writeFile(buf []byte) error {
+	tmpPath := "./tmp"
+	err := os.MkdirAll(tmpPath, 0o700)
+	if err != nil {
+		return err
+	}
+
+	file := filepath.Join(tmpPath, "line-chart.png")
+	err = os.WriteFile(file, buf, 0o600)
+	if err != nil {
+		return err
+	}
+	return nil
 }

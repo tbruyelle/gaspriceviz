@@ -14,6 +14,8 @@ import (
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
+	"gioui.org/unit"
+	"gioui.org/widget"
 	"gioui.org/widget/material"
 )
 
@@ -50,13 +52,6 @@ func loop(w *app.Window) error {
 			}.Layout(gtx,
 				layout.Rigid(
 					func(gtx layout.Context) layout.Dimensions {
-						drawImage(gtx.Ops, genChart())
-						d := image.Point{Y: 400}
-						return layout.Dimensions{Size: d}
-					},
-				),
-				layout.Rigid(
-					func(gtx layout.Context) layout.Dimensions {
 						l := material.H1(th, "Hello, Gio")
 						maroon := color.NRGBA{R: 127, G: 0, B: 0, A: 255}
 						l.Color = maroon
@@ -64,10 +59,34 @@ func loop(w *app.Window) error {
 						return l.Layout(gtx)
 					},
 				),
+				layout.Rigid(
+					func(gtx layout.Context) layout.Dimensions {
+						margins := layout.Inset{
+							Top:    unit.Dp(25),
+							Bottom: unit.Dp(25),
+							Right:  unit.Dp(35),
+							Left:   unit.Dp(35),
+						}
+						// TWO: ... then we lay out those margins ...
+						return margins.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+							return layoutImg(gtx, genChart())
+						})
+					},
+				),
 			)
 			e.Frame(gtx.Ops)
 		}
 	}
+}
+
+func layoutImg(gtx layout.Context, img image.Image) layout.Dimensions {
+	// sz := gtx.Constraints.Min.X
+	// img := image.NewRGBA(image.Rectangle{Max: image.Point{X: sz, Y: sz}})
+	// draw.ApproxBiLinear.Scale(img, img.Bounds(), src, src.Bounds(), draw.Src, nil)
+	op := paint.NewImageOp(img)
+	wimg := widget.Image{Src: op}
+	// wimg.Scale = float32(sz) / float32(gtx.Dp(unit.Dp(float32(sz))))
+	return wimg.Layout(gtx)
 }
 
 func drawImage(ops *op.Ops, img image.Image) {
